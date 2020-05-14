@@ -1,0 +1,10 @@
+---
+# defaults file for backend_ssl
+country: IN
+email: daria@www.daria.com
+organization: daria
+key_name: master.key
+csr_name: master.csr
+crt_name: master.crt
+ssl_path: "/etc/ssl/private"
+ssl: false

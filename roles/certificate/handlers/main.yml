@@ -1,0 +1,39 @@
+---
+#
+- name: create pem file by copying key
+  copy:
+    src: "{{ ssl_path }}/{{ key_name }}"
+    remote_src: yes
+    force: no
+    dest: "{{ ssl_path }}/{{ pem_name }}"
+    #- name: create pem file by copying crt
+    #  copy:
+    #    src: "{{ ssl_path }}/{{ crt_name }}"
+    #    remote_src: yes
+    #    dest: "{{ ssl_path }}/{{ pem_name }}"
+
+    #- name: get key content
+    #  slurp:
+    #    src: "{{ ssl_path }}/{{ key_name }}"
+    #  register: key_content
+  #- name: get crt content
+  #  slurp:
+  #    src: "{{ ssl_path }}/{{ crt_name }}"
+  #  register: crt_content
+  #- name: create pem file
+  #  template:
+  #    src: pem.j2
+  #    dest: "{{ ssl_path }}/{{ pem_name }}"
+    #- name: try
+    #  debug:
+    #    msg: "{{ key_content['content'] | b64decode }}"
+    #
+
+   #- name: add key content to pem file
+   #  copy:
+   #    content: "{{ key_content.content }}"
+   #    dest: "{{ ssl_path }}/{{ pem_name }}"
+- name: add crt to pem file
+  lineinfile:
+    line: "{{ crt_content['content'] | b64decode }}"
+    dest:  "{{ ssl_path }}/{{ pem_name }}" 

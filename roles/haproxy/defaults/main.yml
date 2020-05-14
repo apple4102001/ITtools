@@ -1,0 +1,11 @@
+---
+# defaults file for haproxy
+maxconn: 400
+user: haproxy
+group: haproxy
+mode: http
+ports:
+  - 80
+  - 443
+method: roundrobin
+pem_name: master.pem

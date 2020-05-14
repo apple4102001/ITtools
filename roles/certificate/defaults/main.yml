@@ -1,0 +1,10 @@
+---
+# defaults file for certificate
+cn: www.daria.com
+country: IN
+email: daria@www.daria.com
+organization: daria
+key_name: master.key
+csr_name: master.csr
+crt_name: master.crt
+pem_name: master.pem

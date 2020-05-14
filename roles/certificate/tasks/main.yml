@@ -1,0 +1,42 @@
+---
+# tasks file for certificate 
+- name: Install openssl package
+  yum: 
+    name: openssl 
+    state: present
+
+# This is optional steps to keep ssl certificate, create a directory
+
+- name: Create ssl directory
+  file: 
+    path: "{{ ssl_path }}"
+    state: directory 
+    mode: 0775
+
+- name: Generate Private key
+  openssl_privatekey: 
+    path: "{{ ssl_path }}/{{ key_name }}"
+  notify: create pem file by copying key
+
+- name: Generate CSR
+  openssl_csr: 
+    path: "{{ ssl_path }}/{{ csr_name }}"
+    privatekey_path:  "{{ ssl_path }}/{{ key_name }}"
+    common_name: "{{ cn }}" 
+    country_name: "{{ country }}"
+    email_address: "{{ email }}"
+    organization_name: "{{ organization }}"
+
+- name: Generate a self signed certificate
+  openssl_certificate:
+    csr_path: "{{ ssl_path }}/{{ csr_name }}"
+    path:  "{{ ssl_path }}/{{ crt_name }}"
+    privatekey_path: "{{ ssl_path }}/{{ key_name }}"
+    provider: selfsigned
+  notify: add crt to pem file
+
+- name: get crt content
+  slurp:
+    src: "{{ ssl_path }}/{{ crt_name }}"
+  register: crt_content
+  notify: add crt to pem file

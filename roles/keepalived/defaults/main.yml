@@ -1,0 +1,5 @@
+---
+# defaults file for keepalived
+interface: enp0s8
+priority: 100
+state: BACKUP

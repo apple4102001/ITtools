@@ -1,0 +1,18 @@
+---
+# tasks file for keepalived
+- name: install keepalived
+  yum:
+    name: keepalived
+    state: present
+  notify: enable keepalived
+- name: add line
+  lineinfile:
+    path: /etc/sysctl.conf
+    line: "net.ipv4.ip_nonlocal_bind=1"
+    regex: '^net.ipv4.ip_nonlocal_bind='
+
+- name: configure keepalived
+  template:
+    src: keepalived.j2
+    dest: "/etc/keepalived/keepalived.conf"
+  notify: restart keepalived

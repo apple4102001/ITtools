@@ -1,0 +1,40 @@
+---
+# tasks file for apache_backend
+- name: install haproxy
+  yum:
+    name: haproxy
+    state: present
+  notify: enable haproxy
+
+- name: start firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+- name: open ports in firewalld
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop: "{{ ports }}"
+
+- name: configure haproxy
+  template:
+    src: haproxy.j2
+    dest: "/etc/haproxy/haproxy.cfg"
+  notify: restart haproxy
+- name: install python library
+  yum:
+    name: policycoreutils-python-utils-2.9-3.el8_1.1.noarch
+    state: present
+
+  #- name: install semanage
+  #  yum:
+  #    name: semanage
+  #    state: present
+- name: Set haproxy_connect_any flag on and keep it persistent across reboots
+  seboolean:
+    name: haproxy_connect_any
+    state: yes
+    persistent: yes

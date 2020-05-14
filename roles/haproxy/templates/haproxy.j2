@@ -1,0 +1,56 @@
+global
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     {{ maxconn }}
+    user        {{ user }}
+    group       {{ group }}
+    daemon
+
+    stats socket /var/lib/haproxy/stats
+
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+    ssl-server-verify none
+
+defaults
+    mode                    {{ mode }}
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+
+frontend http_balancer
+    bind {{ virtual_ip }}:80
+    bind {{ virtual_ip }}:443 ssl crt {{ ssl_path }}/{{ pem_name }}
+    redirect scheme https if !{ ssl_fc }
+    option http-server-close
+    option forwardfor
+    stats uri /haproxy?stats
+{% for hostname in backends|map(attribute='hostname')|list|unique %}
+    acl {{ hostname }} hdr(host) -m str {{ hostname }}
+    use_backend {{ hostname }} if {{ hostname }}
+{% endfor %}
+{% for hostname in backends|map(attribute='hostname')|list|unique %}
+backend {{ hostname }}
+    mode        http
+    balance     {{ method }}
+    option httpchk HEAD / HTTP/1.1\r\nHost:\ localhost{% for backend in backends -%}{% if backend.hostname ==  hostname %}  
+    {% if backend.ssl is sameas true %}
+    server  server{{ loop.index }} {{ backend.ipaddr }}:443 ssl  check
+    {% else %} 
+    server  server{{ loop.index }} {{ backend.ipaddr }}:80 check {% endif %}
+{% endif %}{%- endfor %}	
+{% endfor %}
+

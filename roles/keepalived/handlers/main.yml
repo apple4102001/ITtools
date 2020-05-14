@@ -1,0 +1,11 @@
+---
+# handlers file for keepalived
+- name: restart keepalived
+  service:
+    name: keepalived
+    state: restarted
+- name: enable keepalived
+  service:
+    name: keepalived
+    enabled: yes
+

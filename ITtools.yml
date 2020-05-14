@@ -1,0 +1,18 @@
+---
+- hosts: apache_backend
+  become: yes
+  vars_files:
+    - group_vars/apache_backend.yml
+  roles:
+    - apache_backend
+    - role: backend_ssl
+      when: ssl|bool
+
+- hosts: haproxy
+  become: yes
+  vars_files:
+    - group_vars/haproxy.yml
+  roles:
+    - certificate
+    - haproxy
+    - keepalived

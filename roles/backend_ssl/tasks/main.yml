@@ -1,0 +1,49 @@
+---
+- name: install mod_ssl
+  yum: 
+    name: mod_ssl
+    state: present
+- name: Install openssl package
+  yum:
+    name: openssl
+    state: present
+
+- name: Create ssl directory
+  file:
+    path: "{{ ssl_path }}"
+    state: directory
+    mode: 0775
+
+- name: Generate Private key
+  openssl_privatekey:
+    path: "{{ ssl_path }}/{{ key_name }}"
+
+- name: Generate CSR
+  openssl_csr:
+    path: "{{ ssl_path }}/{{ csr_name }}"
+    privatekey_path:  "{{ ssl_path }}/{{ key_name }}"
+    common_name: "{{ inventory_hostname }}"
+    country_name: "{{ country }}"
+    email_address: "{{ email }}"
+    organization_name: "{{ organization }}"
+
+- name: Generate a self signed certificate
+  openssl_certificate:
+    csr_path: "{{ ssl_path }}/{{ csr_name }}"
+    path:  "{{ ssl_path }}/{{ crt_name }}"
+    privatekey_path: "{{ ssl_path }}/{{ key_name }}"
+    provider: selfsigned
+
+- name: change ssl.conf
+  template:
+    src: ssl.j2
+    dest: "/etc/httpd/conf.d/ssl.conf"
+  notify: restart httpd
+
+- name: add https to firewalld
+  firewalld:
+    service: https
+    permanent: yes
+    immediate: yes
+    state: enabled
+

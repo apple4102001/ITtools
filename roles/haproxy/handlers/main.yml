@@ -1,0 +1,10 @@
+---
+# handlers file for apache_backend
+- name: restart haproxy
+  service:
+    name: haproxy
+    state: restarted
+- name: enable haproxy
+  service:
+    name: haproxy
+    enabled: yes
